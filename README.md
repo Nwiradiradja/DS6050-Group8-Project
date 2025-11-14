@@ -12,4 +12,7 @@ This project explores whether deep learning models can predict vehicle accident 
 
 All datasets used are public on Kaggle:
 
-* [US Accidents (2016–2023)](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents?utm_source=chatgpt.com)
+* [US Accidents (2016–2023)](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents)
+* [US Weather Events (2016–2022)](https://www.kaggle.com/datasets/sobhanmoosavi/us-weather-events)
+* [USA Car Accidents Severity Prediction](https://www.kaggle.com/code/jingzongwang/usa-car-accidents-severity-prediction)
+
