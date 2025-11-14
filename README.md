@@ -16,3 +16,10 @@ All datasets used are public on Kaggle:
 * [US Weather Events (2016–2022)](https://www.kaggle.com/datasets/sobhanmoosavi/us-weather-events)
 * [USA Car Accidents Severity Prediction](https://www.kaggle.com/code/jingzongwang/usa-car-accidents-severity-prediction)
 
+# Preprocessing Summary
+* Converted severity labels to binary targets
+  * 1-2 -> 0 (Low severity)
+  * 3-4 -> 1 (High severity)
+* Parse timestamps into hour of day and weekday/weekend indicator
+* Map raw weather descriptions to simplified categories such as Clear, Cloudy, Rain, Snow, Fog, Thunderstorm, Other
+* Convert day/night indicator to binary
