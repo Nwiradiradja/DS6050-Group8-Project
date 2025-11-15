@@ -34,3 +34,10 @@ Our initial baseline was a weighted Logistic Regression model.
 * Failed to detect most severe crashes
 
 This baseline confirmed the problem: traditional linear models cannot learn minority-class patterns under heavy imbalance.
+
+# Ablation Study Overview
+* Ablation 1: Loss Function: Inverse Frequency Weighting
+* Ablation 2: Model Depth: Shallow vs. Deep FFNN
+* Ablation 3: Feature Groups
+
+*Please see PDF docs for more info on Ablation
