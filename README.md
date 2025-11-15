@@ -30,7 +30,7 @@ The goal of our preliminary experiments was to address the extreme 80:20 class i
 ### Baseline Model: Logistic Regression
 Our initial baseline was a weighted Logistic Regression model.
 * Weighted F1: 0.73
-* Recall (Severe Class): 0.10
+* Recall (Severe Class): 0.11
 * Failed to detect most severe crashes
 
 This baseline confirmed the problem: traditional linear models cannot learn minority-class patterns under heavy imbalance.
@@ -43,7 +43,7 @@ This baseline confirmed the problem: traditional linear models cannot learn mino
 *Please see PDF docs for more info on Ablation
 
 # Best Model: Shallow FFNN + Inverse Frequency Loss + All Features
-* 142% improvement in Severe F1 over Logistic Regression
+* 126% improvement in Severe F1 over Logistic Regression
 * Balanced recall across classes
 * Best minority-class detection without overfitting
 
