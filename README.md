@@ -41,3 +41,14 @@ This baseline confirmed the problem: traditional linear models cannot learn mino
 * Ablation 3: Feature Groups
 
 *Please see PDF docs for more info on Ablation
+
+# Best Model: Shallow FFNN + Inverse Frequency Loss + All Features
+* 142% improvement in Severe F1 over Logistic Regression
+* Balanced recall across classes
+* Best minority-class detection without overfitting
+
+# Next Steps
+* Feature Engineering Improvements
+* Advanced Loss Function
+* Hyperparameter Expansion
+* Final Comparative Study
