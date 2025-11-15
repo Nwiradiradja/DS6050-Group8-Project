@@ -23,3 +23,14 @@ All datasets used are public on Kaggle:
 * Parse timestamps into hour of day and weekday/weekend indicator
 * Map raw weather descriptions to simplified categories such as Clear, Cloudy, Rain, Snow, Fog, Thunderstorm, Other
 * Convert day/night indicator to binary
+
+# Preliminary Experiments & Abalation Study
+The goal of our preliminary experiments was to address the extreme 80:20 class imbalance between minor and severe accidents, and to identify the best-performing configuration of our Feed-Forward Neural Network (FFNN).
+
+### Baseline Model: Logistic Regression
+Our initial baseline was a weighted Logistic Regression model.
+* Weighted F1: 0.73
+* Recall (Severe Class): 0.10
+* Failed to detect most severe crashes
+
+This baseline confirmed the problem: traditional linear models cannot learn minority-class patterns under heavy imbalance.
