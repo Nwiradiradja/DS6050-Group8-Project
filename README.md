@@ -40,12 +40,17 @@ This baseline confirmed the problem: traditional linear models cannot learn mino
 * Ablation 2: Model Depth: Shallow vs. Deep FFNN
 * Ablation 3: Feature Groups
 
-*Please see PDF docs for more info on Ablation
+* Please see PDF docs for more info on Ablation
 
 # Best Model: Shallow FFNN + Inverse Frequency Loss + All Features
 * 126% improvement in Severe F1 over Logistic Regression
 * Balanced recall across classes
 * Best minority-class detection without overfitting
+
+# Error Analysis 
+* Logistic Regression: High overall accuracy but very low recall on severe crashes; misses most high-severity events, especially under rare weather types.
+* Best FFNN (Shallow + Inverse Frequency): Greatly improves Severe F1 and recall but introduces more false positives during heavy rain and peak traffic, flagging some minor crashes as severe.
+* Common Patterns: Misclassified severe crashes often occur in transitional conditions (light rain, dawn/dusk) where features look similar to minor crashes, suggesting the need for richer features.
 
 # Next Steps
 * Feature Engineering Improvements
