@@ -762,10 +762,9 @@ def main():
         y_val,
         y_test,
         preprocess,
+        df_full,
         class_weights_train,
-        num_cols,
-        cat_cols,
-    ) = load_data_and_features(sample_n=300_000, random_state=42)
+    ) = load_and_prepare_data(sample_n=300_000, random_state=42)
 
     # Use same preprocessor to get numeric arrays
     X_train_proc = preprocess.fit_transform(X_train)
