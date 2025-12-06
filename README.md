@@ -41,7 +41,7 @@ python run_final.py
 results/
     model_comparison.csv
     logreg_feature_importance.csv
-    ablation_loss.csv
+    ablation1_loss_weighting.csv
     ablation_depth.csv
     logreg_minus_one.csv
 ```
