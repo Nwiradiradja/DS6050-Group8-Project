@@ -42,6 +42,6 @@ results/
     model_comparison.csv
     logreg_feature_importance.csv
     ablation1_loss_weighting.csv
-    ablation_depth.csv
+    ablation2_depth.csv
     logreg_minus_one.csv
 ```
