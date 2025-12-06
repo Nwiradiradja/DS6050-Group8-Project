@@ -1,4 +1,3 @@
-# run_final.py
 """
 Main entry point for DS6050 Group 8 Project.
 This script orchestrates the full pipeline:
