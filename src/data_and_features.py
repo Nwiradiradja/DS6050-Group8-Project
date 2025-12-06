@@ -11,22 +11,37 @@ from sklearn.impute import SimpleImputer
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.pipeline import Pipeline
 
+
+# ---------------------------------------------------------
+# Helper function: download CSV (matches notebook logic)
+# ---------------------------------------------------------
 def _download_us_accidents_csv():
+    """
+    Download US Accidents dataset via kagglehub and return path
+    to the largest CSV file (e.g., US_Accidents_March23.csv).
+    """
     path = kagglehub.dataset_download("sobhanmoosavi/us-accidents")
     print("Downloaded to:", path)
 
-    csv_candidates = glob.glob(os.path.join(path, "**", "US_Accidents*.csv"), recursive=True)
+    csv_candidates = glob.glob(
+        os.path.join(path, "**", "US_Accidents*.csv"), recursive=True
+    )
     if not csv_candidates:
         csv_candidates = glob.glob(os.path.join(path, "**", "*.csv"), recursive=True)
 
     if not csv_candidates:
-        raise FileNotFoundError("Couldn't find a CSV in the downloaded dataset.")
+        raise FileNotFoundError("Could not find US Accidents CSV in downloaded files.")
 
     csv_sizes = [(p, os.path.getsize(p)) for p in csv_candidates]
     csv_path = sorted(csv_sizes, key=lambda x: x[1], reverse=True)[0][0]
+
     print("Using CSV:", csv_path)
     return csv_path
 
+
+# ---------------------------------------------------------
+# Helper: simplify weather strings (matches notebook)
+# ---------------------------------------------------------
 def _simplify_weather(w):
     w = str(w).lower()
     if "thunder" in w:
@@ -43,10 +58,29 @@ def _simplify_weather(w):
         return "Clear"
     return "Other"
 
-def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
 
+# ---------------------------------------------------------
+# Main function — used by run_final.py
+# ---------------------------------------------------------
+def load_and_prepare_data(sample_n=300_000, random_state=42):
+    """
+    Download dataset, sample rows, engineer features, build preprocessors,
+    and return train/val/test splits along with metadata.
+
+    Returns (in order):
+        X_train, X_val, X_test
+        y_train, y_val, y_test
+        preprocess (ColumnTransformer)
+        df_full (engineered dataframe for minus-one ablations)
+        class_weights_train (dict)
+        num_cols (list)
+        cat_cols (list)
+    """
     csv_path = _download_us_accidents_csv()
 
+    # ---------------------------------------------------------
+    # 1. Load sample of CSV (matches notebook behavior)
+    # ---------------------------------------------------------
     use_cols = [
         "Severity", "Start_Time", "Weather_Condition",
         "Visibility(mi)", "Temperature(F)", "Wind_Speed(mph)",
@@ -56,16 +90,18 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
     header_cols = pd.read_csv(csv_path, nrows=0).columns.tolist()
     present_cols = [c for c in use_cols if c in header_cols]
 
-    # Sampling
+    # Sample rows by index without loading full CSV into memory
     if sample_n is None:
         df = pd.read_csv(csv_path, usecols=present_cols, low_memory=False)
     else:
-        total_rows = sum(1 for _ in open(csv_path, "r", encoding="utf-8", errors="ignore")) - 1
+        total_rows = sum(
+            1 for _ in open(csv_path, "r", encoding="utf-8", errors="ignore")
+        ) - 1
         sample_n = min(sample_n, total_rows)
         keep_idx = set(np.random.choice(total_rows, size=sample_n, replace=False))
 
         def row_use(i):
-            return (i - 1) in keep_idx
+            return (i - 1) in keep_idx  # i=0 is header
 
         df = pd.read_csv(
             csv_path,
@@ -76,7 +112,9 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
 
     print("Sampled shape:", df.shape)
 
-    # TARGET
+    # ---------------------------------------------------------
+    # 2. Feature engineering (exactly like notebook)
+    # ---------------------------------------------------------
     df = df[df["Severity"].isin([1, 2, 3, 4])].copy()
     df["target"] = df["Severity"].apply(lambda x: 0 if x in [1, 2] else 1)
 
@@ -97,11 +135,15 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
     else:
         df["Weather_Simple"] = "Other"
 
-    df["Daylight"] = df["Sunrise_Sunset"].map({"Day": 1, "Night": 0}) if "Sunrise_Sunset" in df.columns else np.nan
+    if "Sunrise_Sunset" in df.columns:
+        df["Daylight"] = df["Sunrise_Sunset"].map({"Day": 1, "Night": 0})
+    else:
+        df["Daylight"] = np.nan
 
     if "Visibility(mi)" in df.columns:
         df["low_visibility"] = (df["Visibility(mi)"] < 3.0).astype(int)
 
+    # Final set of columns we keep
     keep_cols = [
         "target",
         "Visibility(mi)", "Temperature(F)", "Wind_Speed(mph)", "Precipitation(in)",
@@ -109,14 +151,17 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
         "Weather_Simple", "Daylight",
     ]
     keep_cols = [c for c in keep_cols if c in df.columns]
+
     df = df[keep_cols].copy()
+    df_full = df.copy()  # used for minus-one ablations
 
-    df_full = df.copy()
-
-    # SPLIT X/Y
+    # ---------------------------------------------------------
+    # 3. Train / Val / Test splits
+    # ---------------------------------------------------------
     y = df["target"].values
     X = df.drop(columns=["target"])
 
+    # Determine numeric / categorical columns
     num_candidates = [
         "Visibility(mi)", "Temperature(F)", "Wind_Speed(mph)", "Precipitation(in)",
         "hour", "is_weekend", "is_rush_hour", "low_visibility",
@@ -126,6 +171,7 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
     num_cols = [c for c in num_candidates if c in X.columns]
     cat_cols = [c for c in cat_candidates if c in X.columns]
 
+    # Preprocessing pipelines
     num_pipe = Pipeline([
         ("imp", SimpleImputer(strategy="median")),
         ("sc", StandardScaler()),
@@ -140,6 +186,7 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
         ("cat", cat_pipe, cat_cols),
     ])
 
+    # Splits
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=random_state
     )
@@ -147,21 +194,30 @@ def load_and_prepare_data(sample_n: int = 300_000, random_state: int = 42):
         X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=random_state
     )
 
+    print("Split shapes:", X_train.shape, X_val.shape, X_test.shape)
+
+    # ---------------------------------------------------------
+    # 4. Compute class weights
+    # ---------------------------------------------------------
     classes = np.unique(y_train)
+    class_weights_array = compute_class_weight(
+        class_weight="balanced",
+        classes=classes,
+        y=y_train,
+    )
     class_weights_train = {
-        int(c): float(w)
-        for c, w in zip(
-            classes,
-            compute_class_weight("balanced", classes=classes, y=y_train)
-        )
+        int(c): float(w) for c, w in zip(classes, class_weights_array)
     }
 
     print("Class weights (train):", class_weights_train)
 
+    # Return everything
     return (
         X_train, X_val, X_test,
         y_train, y_val, y_test,
         preprocess,
         df_full,
         class_weights_train,
+        num_cols,
+        cat_cols,
     )
