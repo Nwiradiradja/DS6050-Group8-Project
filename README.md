@@ -23,30 +23,45 @@ All datasets used are public on Kaggle:
 * [USA Car Accidents Severity Prediction](https://www.kaggle.com/code/jingzongwang/usa-car-accidents-severity-prediction)
 
 # Preprocessing Summary
-* Converted severity labels to binary targets
-  * 1-2 -> 0 (Low severity)
-  * 3-4 -> 1 (High severity)
-* Parse timestamps into hour of day and weekday/weekend indicator
-* Map raw weather descriptions to simplified categories such as Clear, Cloudy, Rain, Snow, Fog, Thunderstorm, Other
-* Convert day/night indicator to binary
+* Converted severity labels to binary:
+ * 1–2 → 0 (low severity)
+ * 3–4 → 1 (high severity)
+* Extracted hour of day, weekday vs weekend, and rush-hour indicators
+* Simplified weather into categories:
+Clear, Cloudy, Rain, Snow, Fog, Thunderstorm, Other
+* Converted Sunrise/Sunset into a Day/Night binary
+* Standardized numerical features and one-hot-encoded categorical features
 
-# Preliminary Experiments & Abalation Study
-The goal of our preliminary experiments was to address the extreme 80:20 class imbalance between minor and severe accidents, and to identify the best-performing configuration of our Feed-Forward Neural Network (FFNN).
+# Baseline Model: Logistic Regression (Class-Weighted)
+Our first model was a weighted Logistic Regression using a balanced class-weighting scheme.
+Results on the test set:
 
-### Baseline Model: Logistic Regression
-Our initial baseline was a weighted Logistic Regression model.
-* Weighted F1: 0.73
-* Recall (Severe Class): 0.11
-* Failed to detect most severe crashes
-
-This baseline confirmed the problem: traditional linear models cannot learn minority-class patterns under heavy imbalance.
+* Weighted F1: 0.39
+* Recall (Severe class): 0.81
+* PR-AUC: 0.23
+Despite a high severe-class recall at a tuned threshold, the model showed poor ranking ability (low PR-AUC), confirming the difficulty of learning patterns for rare events.
 
 # Ablation Study Overview
-* Ablation 1: Loss Function: Inverse Frequency Weighting
-* Ablation 2: Model Depth: Shallow vs. Deep FFNN
-* Ablation 3: Feature Groups
+To understand which modeling choices matter most, we ran three controlled ablations:
+## Ablation 1 — Loss Function
+* Compared: Unweighted CE, Balanced CE, Inverse Frequency Weighting, Focal Loss
+* Winner: Inverse Frequency Weighting
 
-* Please see PDF docs for more info on Ablation
+## Ablation 2 — Model Depth
+* Shallow FFNN (2 layers)
+* Deep FFNN (4 layers)
+* Winner: Shallow model (better generalization, fewer parameters)
+
+## Ablation 3 — Feature Groups
+Minus-one study across:
+* Visibility
+* Precipitation
+* Time-of-Day features
+* Day/Night indicator
+* Weather category
+
+Finding:
+Removing visibility or precipitation caused the largest drop, confirming their predictive importance.
 
 # Best Model: Shallow FFNN + Inverse Frequency Loss + All Features
 * 126% improvement in Severe F1 over Logistic Regression
