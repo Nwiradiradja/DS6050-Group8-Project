@@ -299,8 +299,12 @@ def run_logreg_minus_one_ablation(df, results_dir="results"):
         )
 
         classes = np.unique(y_train)
-        cw = compute_class_weight("balanced", classes, y_train)
-        cw_dict = {int(c): w for c, w in zip(classes, cw)}
+        cw = compute_class_weight(
+            class_weight="balanced",
+            classes=classes,
+            y=y_train,
+        )
+        cw_dict = {int(c): float(w) for c, w in zip(classes, cw)}
 
         logreg = LogisticRegression(
             solver="liblinear",
