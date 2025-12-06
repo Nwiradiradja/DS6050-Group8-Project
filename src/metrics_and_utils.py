@@ -118,71 +118,67 @@ def plot_training_curves(
     val_metric_history=None,
     metric_name="Weighted F1",
     title_prefix="FFNN",
+    save_path=None,
 ):
     """
-    Simple helper to plot training loss (and optional validation metric)
-    over epochs.
-
-    Parameters
-    ----------
-    train_loss_history : list[float]
-        Training loss per epoch.
-    val_metric_history : list[float] or None
-        Validation metric per epoch (e.g., weighted F1). Optional.
-    metric_name : str, default="Weighted F1"
-        Name to show on the second subplot.
-    title_prefix : str, default="FFNN"
-        Prefix for plot titles.
+    Plot training loss + optional validation metric.
+    If save_path is provided, save the figure instead of (or in addition to) showing it.
     """
     epochs = range(1, len(train_loss_history) + 1)
 
-    if val_metric_history is not None and len(val_metric_history) == len(train_loss_history):
-        plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(12, 4))
 
-        plt.subplot(1, 2, 1)
-        plt.plot(epochs, train_loss_history, marker="o")
-        plt.title(f"{title_prefix}: Training Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
+    # --- Left: Training Loss ---
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, train_loss_history, marker="o")
+    plt.title(f"{title_prefix}: Training Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
 
+    # --- Right: Validation Metric ---
+    if val_metric_history is not None:
         plt.subplot(1, 2, 2)
         plt.plot(epochs, val_metric_history, marker="o")
         plt.title(f"{title_prefix}: Validation {metric_name}")
         plt.xlabel("Epoch")
         plt.ylabel(metric_name)
 
-        plt.tight_layout()
-        plt.show()
+    plt.tight_layout()
+
+    # Handle saving
+    if save_path is not None:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150)
+        plt.close()
+        print(f"[Saved] Training curves → {save_path}")
     else:
-        # Just plot loss if no validation metric
-        plt.figure(figsize=(6, 4))
-        plt.plot(epochs, train_loss_history, marker="o")
-        plt.title(f"{title_prefix}: Training Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.tight_layout()
         plt.show()
 
-
-def plot_confusion_heatmap(y_true, y_pred, title="Confusion Matrix"):
+def plot_confusion_heatmap(
+    y_true,
+    y_pred,
+    title="Confusion Matrix",
+    save_path=None,
+):
     """
     Plot a confusion-matrix heatmap.
-
-    Parameters
-    ----------
-    y_true : array-like
-        True labels.
-    y_pred : array-like
-        Predicted labels.
-    title : str, default="Confusion Matrix"
-        Title for the heatmap.
+    If save_path is provided, save the figure.
     """
     cm = confusion_matrix(y_true, y_pred)
+
+    plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
     plt.title(title)
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.show()
+
+    if save_path is not None:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150)
+        plt.close()
+        print(f"[Saved] Confusion Matrix → {save_path}")
+    else:
+        plt.show()
 
 import torch
 from torch.utils.data import DataLoader, TensorDataset
