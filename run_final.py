@@ -17,16 +17,16 @@ from src.data_and_features import load_and_prepare_data
 from src.metrics_and_utils import (
     pick_best_threshold,
     evaluate_imbalance_metrics,
-    prepare_dataloaders,
 )
 from src.baseline import (
     train_logistic_regression,
     train_ffnn,
 )
 from src.ablations import (
-    run_loss_ablation,
-    run_depth_ablation,
-    run_minus_one_ablation,
+    run_ablation1_loss_weighting,
+    run_ablation2_depth,
+    build_engineered_df_for_ablation,
+    run_logreg_minus_one_ablation,
 )
 
 RESULTS_DIR = "results"
@@ -47,6 +47,8 @@ def main():
         y_val,
         y_test,
         preprocess,
+        df_full,
+        class_weights_train,
     ) = load_and_prepare_data()
 
     # ----------------------------------------
@@ -96,29 +98,33 @@ def main():
     print("==============================")
 
     # 1) Loss Ablation
-    print("\n--- Ablation 1: Loss Functions ---")
-    loss_results = run_loss_ablation(
-        X_train, X_val, X_test, y_train, y_val, y_test, preprocess
-    )
-    pd.DataFrame(loss_results).to_csv(
-        os.path.join(RESULTS_DIR, "ablation_loss.csv"), index=False
+    print("\n--- Ablation 1: Loss / Weighting ---")
+    run_ablation1_loss_weighting(
+        X_train_proc=preprocess.transform(X_train),
+        y_train=y_train,
+        X_val_proc=preprocess.transform(X_val),
+        y_val=y_val,
+        X_test_proc=preprocess.transform(X_test),
+        y_test=y_test,
+        results_dir=RESULTS_DIR,
     )
 
     # 2) Depth Ablation
     print("\n--- Ablation 2: Model Depth ---")
-    depth_results = run_depth_ablation(
-        X_train, X_val, X_test, y_train, y_val, y_test, preprocess
-    )
-    pd.DataFrame(depth_results).to_csv(
-        os.path.join(RESULTS_DIR, "ablation_depth.csv"), index=False
+    run_ablation2_depth(
+        X_train_proc=preprocess.transform(X_train),
+        y_train=y_train,
+        X_val_proc=preprocess.transform(X_val),
+        y_val=y_val,
+        X_test_proc=preprocess.transform(X_test),
+        y_test=y_test,
+        results_dir=RESULTS_DIR,
     )
 
     # 3) Minus-One Logistic Regression
-    print("\n--- Ablation 3: Minus-One Features (LogReg) ---")
-    minus_one_results = run_minus_one_ablation()
-    minus_one_results.to_csv(
-        os.path.join(RESULTS_DIR, "logreg_minus_one.csv"), index=False
-    )
+    print("\n--- Ablation 3: Minus-One Feature Groups ---")
+    df_ab = build_engineered_df_for_ablation(sample_n=300_000, random_state=42)
+    run_logreg_minus_one_ablation(df_ab, results_dir=RESULTS_DIR)
 
     # ----------------------------------------
     # Step 5 — Save master comparison table
@@ -127,14 +133,12 @@ def main():
     print(" STEP 5 — SAVE MASTER METRICS TABLE")
     print("==============================")
 
-    master_results = pd.DataFrame(
-        [
-            {**eval_logreg_test, "model": "LogReg"},
-            {**eval_logreg_cal_test, "model": "LogReg (Calibrated)"},
-            {**eval_ffnn_test, "model": "FFNN"},
-            {**eval_ffnn_cal_test, "model": "FFNN (Calibrated)"},
-        ]
-    )
+    master_results = pd.DataFrame([
+        {**eval_logreg_test, "model": "LogReg"},
+        {**eval_logreg_cal_test, "model": "LogReg (Calibrated)"},
+        {**eval_ffnn_test, "model": "FFNN"},
+        {**eval_ffnn_cal_test, "model": "FFNN (Calibrated)"},
+    ])
 
     master_path = os.path.join(RESULTS_DIR, "model_comparison.csv")
     master_results.to_csv(master_path, index=False)
