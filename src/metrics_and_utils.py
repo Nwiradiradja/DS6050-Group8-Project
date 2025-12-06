@@ -183,3 +183,30 @@ def plot_confusion_heatmap(y_true, y_pred, title="Confusion Matrix"):
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.show()
+
+import torch
+from torch.utils.data import DataLoader, TensorDataset
+
+
+def prepare_dataloaders(X_train, y_train, X_val, y_val, batch_size=256):
+    """
+    Convert numpy arrays into PyTorch tensors and return DataLoaders
+    for training and validation.
+    """
+
+    # Convert to tensors
+    X_train_t = torch.tensor(X_train, dtype=torch.float32)
+    y_train_t = torch.tensor(y_train, dtype=torch.long)
+    X_val_t   = torch.tensor(X_val, dtype=torch.float32)
+    y_val_t   = torch.tensor(y_val, dtype=torch.long)
+
+    # Build datasets
+    train_ds = TensorDataset(X_train_t, y_train_t)
+    val_ds   = TensorDataset(X_val_t, y_val_t)
+
+    # Build dataloaders
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    val_loader   = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, X_train_t.shape[1]
+
