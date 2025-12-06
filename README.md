@@ -1,12 +1,18 @@
 # Is It Safe to Drive? — Predicting Accident Severity from Weather & Road Conditions
 
-This project explores whether deep learning models can predict vehicle accident severity using historical U.S. accident and weather data. We build a baseline feed-forward neural network (FFNN) to classify accidents as low severity (1–2) or high severity (3–4) using environmental and temporal features such as visibility, temperature, precipitation, weather condition, and time of day.
+This project explores whether machine learning and shallow neural networks can predict accident severity using historical U.S. accident and weather data. We classify crashes into:
+
+* Low severity (1–2)
+* High severity (3–4)
+
+using environmental and temporal features including visibility, temperature, precipitation, weather conditions, and time-of-day indicators.
 
 # Project Goals
-* Understand how weather and temporal conditions influence driving safety
-* Build a baseline deep-learning model to predict accident severity
-* Evaluate performance and identify challenges (class imbalance)
-* Establish groundwork for improved models in the future
+
+* Understand how weather and temporal conditions influence driving risk
+* Build a baseline model for predicting crash severity
+* Evaluate model performance under strong class imbalance (80:20)
+* Identify which modeling choices matter through a structured ablation study
 
 # Datasets
 
