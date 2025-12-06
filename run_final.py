@@ -39,7 +39,15 @@ def main():
     print(" STEP 1 — LOAD & PREPROCESS DATA")
     print("==============================")
 
-    X_train, X_val, X_test, y_train, y_val, y_test, preprocess = load_and_engineer_data()
+    (
+        X_train,
+        X_val,
+        X_test,
+        y_train,
+        y_val,
+        y_test,
+        preprocess,
+    ) = load_and_prepare_data()
 
     # ----------------------------------------
     # Step 2 — Logistic Regression Baseline
@@ -92,19 +100,25 @@ def main():
     loss_results = run_loss_ablation(
         X_train, X_val, X_test, y_train, y_val, y_test, preprocess
     )
-    pd.DataFrame(loss_results).to_csv(f"{RESULTS_DIR}/ablation_loss.csv", index=False)
+    pd.DataFrame(loss_results).to_csv(
+        os.path.join(RESULTS_DIR, "ablation_loss.csv"), index=False
+    )
 
     # 2) Depth Ablation
     print("\n--- Ablation 2: Model Depth ---")
     depth_results = run_depth_ablation(
         X_train, X_val, X_test, y_train, y_val, y_test, preprocess
     )
-    pd.DataFrame(depth_results).to_csv(f"{RESULTS_DIR}/ablation_depth.csv", index=False)
+    pd.DataFrame(depth_results).to_csv(
+        os.path.join(RESULTS_DIR, "ablation_depth.csv"), index=False
+    )
 
     # 3) Minus-One Logistic Regression
     print("\n--- Ablation 3: Minus-One Features (LogReg) ---")
     minus_one_results = run_minus_one_ablation()
-    minus_one_results.to_csv(f"{RESULTS_DIR}/logreg_minus_one.csv", index=False)
+    minus_one_results.to_csv(
+        os.path.join(RESULTS_DIR, "logreg_minus_one.csv"), index=False
+    )
 
     # ----------------------------------------
     # Step 5 — Save master comparison table
@@ -113,14 +127,16 @@ def main():
     print(" STEP 5 — SAVE MASTER METRICS TABLE")
     print("==============================")
 
-    master_results = pd.DataFrame([
-        {**eval_logreg_test, "model": "LogReg"},
-        {**eval_logreg_cal_test, "model": "LogReg (Calibrated)"},
-        {**eval_ffnn_test, "model": "FFNN"},
-        {**eval_ffnn_cal_test, "model": "FFNN (Calibrated)"},
-    ])
+    master_results = pd.DataFrame(
+        [
+            {**eval_logreg_test, "model": "LogReg"},
+            {**eval_logreg_cal_test, "model": "LogReg (Calibrated)"},
+            {**eval_ffnn_test, "model": "FFNN"},
+            {**eval_ffnn_cal_test, "model": "FFNN (Calibrated)"},
+        ]
+    )
 
-    master_path = f"{RESULTS_DIR}/model_comparison.csv"
+    master_path = os.path.join(RESULTS_DIR, "model_comparison.csv")
     master_results.to_csv(master_path, index=False)
 
     print(f"Saved master comparison → {master_path}")
