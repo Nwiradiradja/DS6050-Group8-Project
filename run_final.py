@@ -63,8 +63,6 @@ def main():
         X_train, X_val, X_test,
         y_train, y_val, y_test,
         preprocess,
-        num_cols,
-        cat_cols,
     )
 
     # Save LR feature importances
@@ -79,6 +77,7 @@ def main():
     print(" STEP 3 — SHALLOW FFNN BASELINE")
     print("==============================")
 
+    fitted_pre = best_lr_model.named_steps["preprocessor"]
     eval_ffnn_test, eval_ffnn_cal_test = train_ffnn(
         X_train,
         X_val,
@@ -86,10 +85,9 @@ def main():
         y_train,
         y_val,
         y_test,
-        preprocess,
-        class_weights_train,
+        fitted_pre
     )
-
+    
     # --------------------------------------------------
     # Step 4 — Ablation Studies
     # --------------------------------------------------
@@ -97,30 +95,32 @@ def main():
     print(" STEP 4 — ABLATION STUDIES")
     print("==============================")
 
+    # Use the same fitted preprocessor as the baselines
+    X_train_proc = fitted_pre.transform(X_train)
+    X_val_proc = fitted_pre.transform(X_val)
+    X_test_proc = fitted_pre.transform(X_test)
+
     # 1) Loss Weighting Ablation
     print("\n--- Ablation 1: Loss Weighting ---")
     run_ablation1_loss_weighting(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
-        X_test,
-        y_test,
-        preprocess,
+        X_train_proc=X_train_proc,
+        y_train=y_train,
+        X_val_proc=X_val_proc,
+        y_val=y_val,
+        X_test_proc=X_test_proc,
+        y_test=y_test,
         results_dir=RESULTS_DIR,
     )
 
     # 2) Model Depth Ablation
     print("\n--- Ablation 2: Depth Variation (Shallow vs Deep FFNN) ---")
     run_ablation2_depth(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
-        X_test,
-        y_test,
-        preprocess,
-        class_weights_train,
+        X_train_proc=X_train_proc,
+        y_train=y_train,
+        X_val_proc=X_val_proc,
+        y_val=y_val,
+        X_test_proc=X_test_proc,
+        y_test=y_test,
         results_dir=RESULTS_DIR,
     )
 
@@ -130,6 +130,7 @@ def main():
         df_full,
         results_dir=RESULTS_DIR,
     )
+
 
     # --------------------------------------------------
     # Step 5 — Save Master Comparison Table

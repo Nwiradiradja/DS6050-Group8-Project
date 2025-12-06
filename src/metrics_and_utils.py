@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 # ---------------------------------------------------------
-# Evaluate metrics 
+# Evaluate metrics — EXACT match to your notebook output
 # ---------------------------------------------------------
 def evaluate_imbalance_metrics(y_true, y_pred, y_proba, model_name="model"):
     """
@@ -60,7 +60,7 @@ def evaluate_imbalance_metrics(y_true, y_pred, y_proba, model_name="model"):
 
 
 # ---------------------------------------------------------
-# Threshold tuning
+# Threshold tuning — EXACT notebook logic
 # ---------------------------------------------------------
 def pick_best_threshold(y_true_val, y_proba_val, mode="f1", grid=None):
     """
@@ -114,7 +114,7 @@ def plot_training_curves(
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
 
-    # Right: Validation metric 
+    # Right: Validation metric (optional)
     if val_metric_history is not None:
         plt.subplot(1, 2, 2)
         plt.plot(epochs, val_metric_history, marker="o")
